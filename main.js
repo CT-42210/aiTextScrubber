@@ -1,9 +1,11 @@
 // main.js - Electron Main Process
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const fs = require('fs');
+const path = require('path');
 
-// Keep a global reference of the window object
+// Keep a global reference of the window objects
 let mainWindow;
+let verboseWindow;
 
 function createWindow() {
   // Create the browser window
@@ -25,6 +27,33 @@ function createWindow() {
   // When window is closed
   mainWindow.on('closed', function () {
     mainWindow = null;
+  });
+}
+
+// Create a verbose details window
+function createVerboseWindow() {
+  // Close existing window if it exists
+  if (verboseWindow) {
+    verboseWindow.close();
+  }
+
+  verboseWindow = new BrowserWindow({
+    width: 900,
+    height: 700,
+    title: 'Text Cleaning Details',
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    }
+  });
+
+  verboseWindow.loadFile('verbose.html');
+
+  // Open DevTools during development (comment out for production)
+  // verboseWindow.webContents.openDevTools();
+
+  verboseWindow.on('closed', function () {
+    verboseWindow = null;
   });
 }
 
@@ -58,5 +87,17 @@ ipcMain.handle('import-file', async () => {
 
 ipcMain.handle('export-file', async (event, { filePath, content }) => {
   fs.writeFileSync(filePath, content, 'utf8');
+  return true;
+});
+
+// Handle verbose window creation and data passing
+ipcMain.handle('show-verbose-window', (event, verboseData) => {
+  createVerboseWindow();
+
+  // Wait for the verbose window to be ready before sending data
+  verboseWindow.webContents.once('did-finish-load', () => {
+    verboseWindow.webContents.send('verbose-data', verboseData);
+  });
+
   return true;
 });

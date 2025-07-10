@@ -2,6 +2,7 @@
 const { ipcRenderer, clipboard } = require('electron');
 const config = require('./config.js');
 const scrubber = require('./scrubber.js');
+const verbose = require('./verbose.js');
 
 // DOM Elements
 const cleanButton = document.getElementById('clean-button');
@@ -43,9 +44,24 @@ function setupEventListeners() {
     cleanButton.addEventListener('click', () => {
         const text = clipboard.readText();
         if (text) {
-            const cleanedText = scrubber.cleanText(text, settings);
-            clipboard.writeText(cleanedText);
-            showStatus('Text cleaned and copied to clipboard!', 'success');
+            // Store original text for verbose mode
+            const originalText = text;
+
+            // Process text based on settings
+            const result = scrubber.cleanText(text, settings);
+
+            if (settings.verboseMode) {
+                // In verbose mode, result is an object with text and details
+                clipboard.writeText(result.text);
+                showStatus('Text cleaned and copied to clipboard!', 'success');
+
+                // Show the verbose popup with details
+                verbose.showVerbosePopup(result.details, originalText, result.text);
+            } else {
+                // In normal mode, result is just the cleaned text
+                clipboard.writeText(result);
+                showStatus('Text cleaned and copied to clipboard!', 'success');
+            }
         } else {
             showStatus('Clipboard is empty!', 'warning');
         }
@@ -72,12 +88,25 @@ function setupEventListeners() {
         }
         
         try {
-            const cleanedText = scrubber.cleanText(currentFile.content, settings);
-            await ipcRenderer.invoke('export-file', {
-                filePath: currentFile.filePath,
-                content: cleanedText
-            });
-            showStatus('File cleaned and saved!', 'success');
+            const originalText = currentFile.content;
+            const result = scrubber.cleanText(originalText, settings);
+
+            if (settings.verboseMode) {
+                await ipcRenderer.invoke('export-file', {
+                    filePath: currentFile.filePath,
+                    content: result.text
+                });
+                showStatus('File cleaned and saved!', 'success');
+
+                // Show the verbose popup with details
+                verbose.showVerbosePopup(result.details, originalText, result.text);
+            } else {
+                await ipcRenderer.invoke('export-file', {
+                    filePath: currentFile.filePath,
+                    content: result
+                });
+                showStatus('File cleaned and saved!', 'success');
+            }
         } catch (error) {
             showStatus(`Error exporting file: ${error.message}`, 'danger');
         }

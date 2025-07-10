@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Scrubber</title>
+    <link rel="stylesheet" href="verbose.css">
     <style>
         body {
             margin: 0;
@@ -115,7 +116,7 @@
             font-weight: bold;
             text-align: center;
         }
-        
+
         .text-success {
             color: #28a745;
         }
@@ -151,15 +152,6 @@
                 </div>
                 <div class="checkbox-container">
                     <label>
-                        <input type="checkbox" id="statisticalWatermarks">
-                        Statistical Watermarks
-                    </label>
-                    <small class="form-text text-muted d-block">
-                        Functionality for statistical watermark detection (not yet implemented)
-                    </small>
-                </div>
-                <div class="checkbox-container">
-                    <label>
                         <input type="checkbox" id="verboseMode">
                         Verbose Mode
                     </label>
@@ -177,5 +169,6 @@
     </div>
 
     <script src="./renderer.js"></script>
+    <script src="./verbose.js"></script>
 </body>
 </html>

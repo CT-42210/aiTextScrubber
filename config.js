@@ -9,12 +9,6 @@ module.exports = {
             defaultValue: true
         },
         {
-            id: 'statisticalWatermarks',
-            name: 'Statistical Watermarks',
-            description: 'Functionality for statistical watermark detection (not yet implemented)',
-            defaultValue: false
-        },
-        {
             id: 'verboseMode',
             name: 'Verbose Mode',
             description: 'Logs detailed information about the cleaning process',
