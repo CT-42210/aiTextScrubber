@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Scrubber</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #left-panel {
+            width: 40%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        #clean-button {
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #clean-button:hover {
+            background-color: #3e8e41;
+        }
+
+        #clean-button:active {
+            background-color: #357a38;
+            transform: translateY(2px);
+        }
+
+        #right-panel {
+            width: 60%;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        #settings-card {
+            flex-grow: 1;
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .settings-content {
+            flex-grow: 1;
+        }
+
+        .checkbox-container {
+            margin-bottom: 10px;
+        }
+
+        .checkbox-container label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .checkbox-container input {
+            margin-right: 10px;
+        }
+
+        .import-container {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        #import-button, #export-button {
+            padding: 12px 24px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #import-button:hover, #export-button:hover {
+            background-color: #0b7dda;
+        }
+
+        #import-button:active, #export-button:active {
+            background-color: #0a6bbd;
+            transform: translateY(1px);
+        }
+        
+        #status-message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .text-success {
+            color: #28a745;
+        }
+        
+        .text-warning {
+            color: #ffc107;
+        }
+        
+        .text-danger {
+            color: #dc3545;
+        }
+        
+        .text-primary {
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div id="left-panel">
+        <button id="clean-button">CLEAN</button>
+    </div>
+    <div id="right-panel">
+        <div id="settings-card">
+            <div class="settings-content">
+                <div class="checkbox-container">
+                    <label>
+                        <input type="checkbox" id="normalizeCharacters" checked>
+                        Normalize Characters
+                    </label>
+                    <small class="form-text text-muted d-block">
+                        Converts uncommon Unicode characters to their standard equivalents
+                    </small>
+                </div>
+                <div class="checkbox-container">
+                    <label>
+                        <input type="checkbox" id="statisticalWatermarks">
+                        Statistical Watermarks
+                    </label>
+                    <small class="form-text text-muted d-block">
+                        Functionality for statistical watermark detection (not yet implemented)
+                    </small>
+                </div>
+                <div class="checkbox-container">
+                    <label>
+                        <input type="checkbox" id="verboseMode">
+                        Verbose Mode
+                    </label>
+                    <small class="form-text text-muted d-block">
+                        Logs detailed information about the cleaning process
+                    </small>
+                </div>
+            </div>
+            <div class="import-container">
+                <button id="import-button">Import File</button>
+                <button id="export-button">Export File</button>
+            </div>
+            <div id="status-message"></div>
+        </div>
+    </div>
+
+    <script src="./renderer.js"></script>
+</body>
+</html>
