@@ -10,40 +10,47 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="left-panel">
-        <button id="clean-button">CLEAN</button>
-    </div>
-    <div id="right-panel">
-        <div id="settings-card">
-            <div class="settings-content">
-                <div class="checkbox-container">
-                    <label>
-                        <input type="checkbox" id="normalizeCharacters" checked>
-                        Normalize Characters
-                    </label>
-                    <small class="form-text text-muted d-block">
-                        Converts uncommon Unicode characters to their standard equivalents
-                    </small>
-                </div>
-                <div class="checkbox-container">
-                    <label>
-                        <input type="checkbox" id="verboseMode">
-                        Verbose Mode
-                    </label>
-                    <small class="form-text text-muted d-block">
-                        Logs detailed information about the cleaning process
-                    </small>
-                </div>
+<div id="left-panel">
+    <button id="clean-button">CLEAN</button>
+</div>
+<div id="right-panel">
+    <div id="settings-card">
+        <div class="settings-content">
+            <div class="checkbox-container">
+                <label for="normalizeCharacters">
+                    <input type="checkbox" id="normalizeCharacters" checked/>
+                    <span class="label-text">Normalize Characters</span>
+                    <span class="toggle-controls">
+                        <span class="info-icon" data-tooltip="Converts uncommon Unicode characters to their standard equivalents">ⓘ</span>
+                        <span class="toggle-slider"></span>
+                    </span>
+                </label>
             </div>
-            <div class="import-container">
-                <button id="import-button">Import File</button>
-                <button id="export-button">Export File</button>
+            <div class="checkbox-container">
+                <label for="boldAiDetectedText">
+                    <input type="checkbox" id="boldAiDetectedText"/>
+                    <span class="label-text">Bold AI Detected Text</span>
+                    <span class="toggle-controls">
+                        <span class="info-icon" data-tooltip="Bolds text that is likely AI-generated.">ⓘ</span>
+                        <span class="toggle-slider"></span>
+                    </span>
+                </label>
             </div>
-            <div id="status-message"></div>
+            <div class="checkbox-container">
+                <label for="verboseMode">
+                    <input type="checkbox" id="verboseMode"/>
+                    <span class="label-text">Verbose Mode</span>
+                    <span class="toggle-controls">
+                        <span class="info-icon" data-tooltip="Logs detailed information about the cleaning process">ⓘ</span>
+                        <span class="toggle-slider"></span>
+                    </span>
+                </label>
+            </div>
         </div>
     </div>
+</div>
 
-    <script src="./renderer.js"></script>
-    <script src="./verbose.js"></script>
+<script src="./renderer.js"></script>
+<script src="./verbose.js"></script>
 </body>
 </html>

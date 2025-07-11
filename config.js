@@ -9,6 +9,12 @@ module.exports = {
             defaultValue: true
         },
         {
+            id: 'boldAiDetectedText',
+            name: 'Bold AI Detected Text',
+            description: 'Bolds text that is likely AI-generated.',
+            defaultValue: false
+        },
+        {
             id: 'verboseMode',
             name: 'Verbose Mode',
             description: 'Logs detailed information about the cleaning process',

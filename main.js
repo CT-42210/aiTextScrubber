@@ -1,7 +1,5 @@
 // main.js - Electron Main Process
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
-const fs = require('fs');
-const path = require('path');
+const { app, BrowserWindow, ipcMain } = require('electron');
 
 // Keep a global reference of the window objects
 let mainWindow;
@@ -11,7 +9,7 @@ function createWindow() {
   // Create the browser window
   mainWindow = new BrowserWindow({
     width: 800,
-    height: 300,
+    height: 440,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
@@ -67,27 +65,6 @@ app.on('window-all-closed', function () {
 
 app.on('activate', function () {
   if (mainWindow === null) createWindow();
-});
-
-// Handle file operations
-ipcMain.handle('import-file', async () => {
-  const { canceled, filePaths } = await dialog.showOpenDialog({
-    properties: ['openFile'],
-    filters: [
-      { name: 'Text Files', extensions: ['txt', 'md', 'doc', 'docx', 'rtf'] }
-    ]
-  });
-  
-  if (!canceled && filePaths.length > 0) {
-    const content = fs.readFileSync(filePaths[0], 'utf8');
-    return { filePath: filePaths[0], content };
-  }
-  return null;
-});
-
-ipcMain.handle('export-file', async (event, { filePath, content }) => {
-  fs.writeFileSync(filePath, content, 'utf8');
-  return true;
 });
 
 // Handle verbose window creation and data passing

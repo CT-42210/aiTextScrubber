@@ -1,17 +1,13 @@
 // renderer.js - Frontend Logic
-const { ipcRenderer, clipboard } = require('electron');
+const { clipboard } = require('electron');
 const config = require('./config.js');
 const scrubber = require('./scrubber.js');
 const verbose = require('./verbose.js');
 
 // DOM Elements
 const cleanButton = document.getElementById('clean-button');
-const importButton = document.getElementById('import-button');
-const exportButton = document.getElementById('export-button');
-const statusMessage = document.getElementById('status-message');
 
 // Global variables
-let currentFile = null;
 let settings = {};
 
 // Initialize the app
@@ -38,6 +34,32 @@ function loadSettings() {
     });
 }
 
+// Show visual feedback on clean button
+function showButtonFeedback(type = 'success') {
+    // Remove any existing animation classes
+    cleanButton.classList.remove('success', 'warning', 'error');
+
+    // Force a reflow to ensure the class removal takes effect
+    cleanButton.offsetHeight;
+
+    // Add the appropriate class
+    cleanButton.classList.add(type);
+
+    // Listen for animation end to properly clean up
+    const handleAnimationEnd = () => {
+        cleanButton.classList.remove('success', 'warning', 'error');
+        cleanButton.removeEventListener('animationend', handleAnimationEnd);
+    };
+
+    cleanButton.addEventListener('animationend', handleAnimationEnd);
+
+    // Fallback timeout in case animationend doesn't fire
+    setTimeout(() => {
+        cleanButton.classList.remove('success', 'warning', 'error');
+        cleanButton.removeEventListener('animationend', handleAnimationEnd);
+    }, 1100);
+}
+
 // Set up event listeners
 function setupEventListeners() {
     // Clean button
@@ -53,77 +75,220 @@ function setupEventListeners() {
             if (settings.verboseMode) {
                 // In verbose mode, result is an object with text and details
                 clipboard.writeText(result.text);
-                showStatus('Text cleaned and copied to clipboard!', 'success');
+                showButtonFeedback('success');
 
                 // Show the verbose popup with details
                 verbose.showVerbosePopup(result.details, originalText, result.text);
             } else {
                 // In normal mode, result is just the cleaned text
                 clipboard.writeText(result);
-                showStatus('Text cleaned and copied to clipboard!', 'success');
+                showButtonFeedback('success');
             }
         } else {
-            showStatus('Clipboard is empty!', 'warning');
-        }
-    });
-    
-    // Import button
-    importButton.addEventListener('click', async () => {
-        try {
-            const result = await ipcRenderer.invoke('import-file');
-            if (result) {
-                currentFile = result;
-                showStatus(`File loaded: ${result.filePath}`, 'success');
-            }
-        } catch (error) {
-            showStatus(`Error importing file: ${error.message}`, 'danger');
-        }
-    });
-    
-    // Export button
-    exportButton.addEventListener('click', async () => {
-        if (!currentFile) {
-            showStatus('No file loaded to export', 'warning');
-            return;
-        }
-        
-        try {
-            const originalText = currentFile.content;
-            const result = scrubber.cleanText(originalText, settings);
-
-            if (settings.verboseMode) {
-                await ipcRenderer.invoke('export-file', {
-                    filePath: currentFile.filePath,
-                    content: result.text
-                });
-                showStatus('File cleaned and saved!', 'success');
-
-                // Show the verbose popup with details
-                verbose.showVerbosePopup(result.details, originalText, result.text);
-            } else {
-                await ipcRenderer.invoke('export-file', {
-                    filePath: currentFile.filePath,
-                    content: result
-                });
-                showStatus('File cleaned and saved!', 'success');
-            }
-        } catch (error) {
-            showStatus(`Error exporting file: ${error.message}`, 'danger');
+            showButtonFeedback('warning');
         }
     });
 }
 
-// Show status message
-function showStatus(message, type = 'primary') {
-    statusMessage.textContent = message;
-    statusMessage.className = `text-${type}`;
-    
-    // Clear after 3 seconds
-    setTimeout(() => {
-        statusMessage.textContent = '';
-        statusMessage.className = '';
-    }, 3000);
-}
+// Add this to your renderer.js file or include it as a separate script
+
+// Handle clicking on the checkbox container for better UX
+document.addEventListener('DOMContentLoaded', function() {
+    // Get all checkbox containers
+    const checkboxContainers = document.querySelectorAll('.checkbox-container');
+
+    checkboxContainers.forEach(container => {
+        // Make the entire container clickable, but only for the settings area
+        container.addEventListener('click', function(e) {
+            // Don't toggle if clicking on the info icon or label children
+            if (e.target.closest('.info-icon') || e.target.closest('label')) {
+                return;
+            }
+            const checkbox = this.querySelector('input[type="checkbox"]');
+            if (checkbox) {
+                checkbox.checked = !checkbox.checked;
+                // Trigger change event for any listeners
+                checkbox.dispatchEvent(new Event('change'));
+            }
+        });
+
+        // Add hover effect to container
+        container.addEventListener('mouseenter', function() {
+            this.style.cursor = 'pointer';
+        });
+    });
+
+    // Handle info icon click popups
+    let currentPopup = null;
+
+    function createInfoPopup(text, iconElement) {
+        // Remove any existing popup
+        if (currentPopup) {
+            currentPopup.remove();
+            currentPopup = null;
+        }
+
+        const popup = document.createElement('div');
+        popup.className = 'info-popup';
+        popup.textContent = text;
+
+        // Position popup off-screen initially to get accurate measurements
+        popup.style.position = 'fixed';
+        popup.style.top = '-9999px';
+        popup.style.left = '-9999px';
+        popup.style.visibility = 'hidden';
+
+        document.body.appendChild(popup);
+
+        // Force a reflow to ensure the popup is rendered
+        popup.offsetHeight;
+
+        // Now get accurate measurements
+        const iconRect = iconElement.getBoundingClientRect();
+        const popupRect = popup.getBoundingClientRect();
+
+        // Calculate centered position relative to the icon
+        let top = iconRect.top - popupRect.height - 16; // 16px for arrow space
+        let left = iconRect.left + (iconRect.width / 2) - (popupRect.width / 2);
+
+        // Adjust if popup goes off screen
+        const margin = 10;
+        let isBelow = false;
+
+        if (top < margin) {
+            top = iconRect.bottom + 16; // Place below icon
+            isBelow = true;
+        }
+
+        if (left < margin) {
+            left = margin;
+        } else if (left + popupRect.width > window.innerWidth - margin) {
+            left = window.innerWidth - popupRect.width - margin;
+        }
+
+        // Apply the calculated position and make visible
+        popup.style.top = top + 'px';
+        popup.style.left = left + 'px';
+        popup.style.visibility = 'visible';
+
+        if (isBelow) {
+            popup.classList.add('below');
+        }
+
+        // Calculate arrow position relative to icon center
+        const iconCenterX = iconRect.left + (iconRect.width / 2);
+        const popupLeft = parseFloat(popup.style.left);
+        const arrowLeftOffset = iconCenterX - popupLeft;
+
+        // Set custom CSS property for arrow positioning
+        popup.style.setProperty('--arrow-left', arrowLeftOffset + 'px');
+
+        // Show with animation
+        requestAnimationFrame(() => {
+            popup.classList.add('show');
+        });
+
+        return popup;
+    }
+
+    function closeInfoPopup() {
+        if (currentPopup) {
+            currentPopup.classList.remove('show');
+            setTimeout(() => {
+                if (currentPopup && currentPopup.parentNode) {
+                    currentPopup.remove();
+                    currentPopup = null;
+                }
+            }, 200);
+        }
+    }
+
+    // Add click handlers for info icons
+    const infoIcons = document.querySelectorAll('.info-icon');
+
+    infoIcons.forEach(icon => {
+        icon.addEventListener('click', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            const tooltipText = this.getAttribute('data-tooltip');
+            if (tooltipText) {
+                if (currentPopup) {
+                    closeInfoPopup();
+                } else {
+                    currentPopup = createInfoPopup(tooltipText, this);
+                }
+            }
+        });
+    });
+
+    // Close popup when clicking outside
+    document.addEventListener('click', function(e) {
+        if (currentPopup && !e.target.closest('.info-popup') && !e.target.closest('.info-icon')) {
+            closeInfoPopup();
+        }
+    });
+
+    // Close popup on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && currentPopup) {
+            closeInfoPopup();
+        }
+    });
+
+    // Optional: Add ripple effect to buttons
+    const buttons = document.querySelectorAll('button');
+    buttons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            // Remove any existing ripples
+            const existingRipple = this.querySelector('.ripple');
+            if (existingRipple) {
+                existingRipple.remove();
+            }
+
+            const ripple = document.createElement('span');
+            ripple.className = 'ripple';
+            const rect = this.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = e.clientX - rect.left - size / 2;
+            const y = e.clientY - rect.top - size / 2;
+
+            ripple.style.cssText = `
+                position: absolute;
+                width: ${size}px;
+                height: ${size}px;
+                left: ${x}px;
+                top: ${y}px;
+                background: rgba(255,255,255,0.5);
+                border-radius: 50%;
+                transform: scale(0);
+                animation: ripple 0.6s ease-out;
+                pointer-events: none;
+            `;
+
+            // Add animation if not already present
+            if (!document.querySelector('style[data-ripple]')) {
+                const style = document.createElement('style');
+                style.setAttribute('data-ripple', '');
+                style.textContent = `
+                    @keyframes ripple {
+                        to {
+                            transform: scale(4);
+                            opacity: 0;
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            this.style.position = 'relative';
+            this.style.overflow = 'hidden';
+            this.appendChild(ripple);
+
+            setTimeout(() => ripple.remove(), 600);
+        });
+    });
+});
 
 // Initialize the app
 document.addEventListener('DOMContentLoaded', init);
