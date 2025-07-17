@@ -1,5 +1,5 @@
 // main.js - Electron Main Process
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, systemPreferences } = require('electron');
 
 // Keep a global reference of the window objects
 let mainWindow;
@@ -25,6 +25,18 @@ function createWindow() {
   // When window is closed
   mainWindow.on('closed', function () {
     mainWindow = null;
+  });
+
+  ipcMain.on('ui-ready', () => {
+    let accentColor;
+    if (process.platform === 'darwin') {
+      accentColor = `#${systemPreferences.getAccentColor()}`;
+    } else if (process.platform === 'win32') {
+      accentColor = `#${systemPreferences.getAccentColor()}`;
+    } else {
+      accentColor = '#6e45a8'; // Fallback for Linux
+    }
+    mainWindow.webContents.send('system-accent-color', accentColor);
   });
 }
 

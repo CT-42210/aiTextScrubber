@@ -1,5 +1,7 @@
 /* Glassmorphism Theme for AI Scrubber */
 :root {
+    --system-accent-color: #6e45a8; /* Fallback color */
+    --system-accent-color-dark: #4b2a76; /* Fallback color */
     --spacing-xs: 4px;
     --spacing-s: 8px;
     --spacing-ms: 12px;
@@ -16,7 +18,7 @@ body {
     display: flex;
     height: 100vh;
     overflow: hidden;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--system-accent-color) 0%, var(--system-accent-color-dark) 100%);
     position: relative;
 }
 
@@ -462,7 +464,7 @@ input[type="checkbox"]:checked ~ .label-text ~ .toggle-controls .toggle-slider::
 body.verbose-page {
     display: flex;
     flex-direction: column;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--system-accent-color) 0%, var(--system-accent-color-dark) 100%);
 }
 
 .header {
